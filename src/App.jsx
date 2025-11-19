@@ -1,626 +1,642 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { RefreshCw, Trophy, Frown, Heart, Film, Lightbulb, RotateCcw, X, Zap } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { RotateCcw, Lightbulb, X, Keyboard, Settings } from 'lucide-react';
 
-// --- Massive Movie Bank ---
-const MOVIE_DATA = [
-  // --- BOLLYWOOD ---
-  { word: "SHOLAY", category: "Bollywood Classic" },
-  { word: "DILWALE DULHANIA LE JAYENGE", category: "Bollywood Romance" },
-  { word: "THREE IDIOTS", category: "Bollywood Comedy" },
-  { word: "LAGAAN", category: "Bollywood Sport/Drama" },
-  { word: "GANGS OF WASSEYPUR", category: "Bollywood Crime" },
-  { word: "ZINDAGI NA MILEGI DOBARA", category: "Bollywood Road Trip" },
-  { word: "RANG DE BASANTI", category: "Bollywood Drama" },
-  { word: "DANGAL", category: "Bollywood Biopic" },
-  { word: "KABHI KHUSHI KABHIE GHAM", category: "Bollywood Drama" },
-  { word: "ANDAZ APNA APNA", category: "Bollywood Comedy" },
-  { word: "HERA PHERI", category: "Bollywood Comedy" },
-  { word: "MUNNA BHAI MBBS", category: "Bollywood Comedy" },
-  { word: "BAJRANGI BHAIJAAN", category: "Bollywood Drama" },
-  { word: "PK", category: "Bollywood Sci-Fi/Satire" },
-  { word: "QUEEN", category: "Bollywood Drama" },
-  { word: "OM SHANTI OM", category: "Bollywood Masala" },
-  { word: "CHAK DE INDIA", category: "Bollywood Sport" },
-  { word: "SWADES", category: "Bollywood Drama" },
-  { word: "BARFI", category: "Bollywood Romance" },
-  { word: "TAARE ZAMEEN PAR", category: "Bollywood Drama" },
-  { word: "DRISHYAM", category: "Bollywood Thriller" },
-  { word: "ANDHADHUN", category: "Bollywood Thriller" },
-  { word: "GOLMAAL", category: "Bollywood Comedy" },
-  { word: "WELCOME", category: "Bollywood Comedy" },
-  { word: "BHOOL BHULAIYAA", category: "Bollywood Horror/Comedy" },
-  { word: "JAB WE MET", category: "Bollywood Romance" },
-  { word: "ROCKSTAR", category: "Bollywood Musical" },
-  { word: "TAMASHA", category: "Bollywood Drama" },
-  { word: "PIKU", category: "Bollywood Comedy" },
-  { word: "UDAAN", category: "Bollywood Drama" },
-  { word: "KAHANI", category: "Bollywood Thriller" },
-  { word: "HAIDER", category: "Bollywood Drama" },
-  { word: "ARTICLE 15", category: "Bollywood Crime" },
-  { word: "BADHAAI HO", category: "Bollywood Comedy" },
-  { word: "STREE", category: "Bollywood Horror/Comedy" },
-  { word: "RAAZI", category: "Bollywood Spy Thriller" },
-  { word: "URI THE SURGICAL STRIKE", category: "Bollywood Action" },
-  { word: "WAR", category: "Bollywood Action" },
-  { word: "PADMAAVAT", category: "Bollywood Period Drama" },
-  { word: "BAJIRAO MASTANI", category: "Bollywood Period Drama" },
-  { word: "KAL HO NAA HO", category: "Bollywood Romance" },
-  { word: "VEER ZAARA", category: "Bollywood Romance" },
-  { word: "DON", category: "Bollywood Action" },
-  { word: "AGNEEPATH", category: "Bollywood Action" },
-  { word: "ROWDY RATHORE", category: "Bollywood Masala" },
-  { word: "DABANGG", category: "Bollywood Action" },
-  { word: "SINGHAM", category: "Bollywood Action" },
-  { word: "KRRISH", category: "Bollywood Superhero" },
-  { word: "KOI MIL GAYA", category: "Bollywood Sci-Fi" },
-  { word: "KAHO NAA PYAAR HAI", category: "Bollywood Romance" },
+// --- Game Data (Expanded & Contextual) ---
+const GAME_DATA = {
+  BOLLYWOOD: [
+    { word: "SHOLAY", hint: "Kitne aadmi the?" },
+    { word: "DANGAL", hint: "Mhari chhoriyan chhoron se kam hai ke?" },
+    { word: "LAGAAN", hint: "Teen guna lagaan dena padega." },
+    { word: "THREE IDIOTS", hint: "All is well!" },
+    { word: "DDLJ", hint: "Jaa Simran jaa, jee le apni zindagi." },
+    { word: "BAHUBALI", hint: "Katappa ne kyu maara?" },
+    { word: "PK", hint: "Wrong number lag gaya." },
+    { word: "GULLY BOY", hint: "Apna time aayega." },
+    { word: "HERA PHERI", hint: "Paisa hi paisa hoga!" },
+    { word: "MUGHAL E AZAM", hint: "Pyaar kiya toh darna kya." },
+    { word: "DON", hint: "11 mulkon ki police isse dhund rahi hai." },
+    { word: "BRAHMASTRA", hint: "Fire... Button... Shiva!" },
+    { word: "KABIR SINGH", hint: "Preeti!!!" },
+    { word: "MUNNA BHAI MBBS", hint: "Jadoo ki jhappi." },
+    { word: "OM SHANTI OM", hint: "Ek chutki sindoor." },
+    { word: "ZNMD", hint: "Bagwati - short form." },
+    { word: "KKHH", hint: "Pyaar dosti hai - short form." },
+    { word: "ANDAZ APNA APNA", hint: "Teja main hoon, mark idhar hai." },
+    { word: "CHENNAI EXPRESS", hint: "Don't underestimate the power of a common man." },
+    { word: "WASSEYPUR", hint: "Tumse na ho payega - short form." }
+  ],
+  FOOD: [
+    { word: "BIRYANI", hint: "The king of rice dishes, Hyderabadi vs Kolkata wars." },
+    { word: "PANI PURI", hint: "Gol gappa, puchka, water balls - street food queen." },
+    { word: "VADA PAV", hint: "Mumbai's own burger." },
+    { word: "DOSA", hint: "South Indian crepe, potato filling inside." },
+    { word: "SAMOSA", hint: "Triangular fried pastry, chai's best friend." },
+    { word: "BUTTER CHICKEN", hint: "Creamy tomato gravy, originated in Delhi." },
+    { word: "GULAB JAMUN", hint: "Sweet fried dough balls soaked in syrup." },
+    { word: "RASGULLA", hint: "Spongy white balls from Bengal." },
+    { word: "CHOLE BHATURE", hint: "Spicy chickpeas with fluffy fried bread." },
+    { word: "PAV BHAJI", hint: "Mashed vegetable curry with buttered bread." },
+    { word: "DHOKLA", hint: "Steamed gram flour snack from Gujarat." },
+    { word: "MOMOS", hint: "Steamed dumplings, red spicy chutney mandatory." },
+    { word: "LITTI CHOKHA", hint: "Pride of Bihar, baked dough balls." },
+    { word: "JALEBI", hint: "Spiral, orange, sweet and sticky." },
+    { word: "RAJMA CHAWAL", hint: "Sunday comfort food for North Indians." },
+    { word: "IDLI", hint: "Steamed rice cakes, healthiest breakfast." }
+  ],
+  CRICKET: [
+    { word: "SACHIN", hint: "God of Cricket." },
+    { word: "KOHLI", hint: "The Run Machine, King." },
+    { word: "DHONI", hint: "Captain Cool, finishes off in style." },
+    { word: "ROHIT", hint: "Hitman, loves double centuries." },
+    { word: "WORLD CUP", hint: "The trophy everyone wants every 4 years." },
+    { word: "IPL", hint: "Indian cash-rich league." },
+    { word: "YORKER", hint: "Toe-crushing delivery." },
+    { word: "GOOGLY", hint: "Looks like leg spin, goes the other way." },
+    { word: "WANKHEDE", hint: "Stadium where 2011 history was made." },
+    { word: "EDEN GARDENS", hint: "Kolkata's massive stadium." },
+    { word: "GABBA", hint: "Where the streak was broken in Australia." },
+    { word: "BUMRAH", hint: "Unorthodox action, lethal yorkers." },
+    { word: "KAPIL DEV", hint: "1983 World Cup winning captain." },
+    { word: "DRAVID", hint: "The Wall, Mr. Dependable." }
+  ],
+  SLANG: [
+    { word: "JUGAAD", hint: "A flexible approach to problem-solving." },
+    { word: "BINDAAS", hint: "Carefree, cool, relaxed." },
+    { word: "VELLA", hint: "Someone with absolutely no work." },
+    { word: "DHAKKAN", hint: "Fool or idiot (literally a lid)." },
+    { word: "PATAKA", hint: "Firecracker, or someone looking stunning." },
+    { word: "CHAI PANI", hint: "Code word for a small bribe or tip." },
+    { word: "TENSION", hint: "Stress, worry (don't take it)." },
+    { word: "PAISA VASOOL", hint: "Value for money." },
+    { word: "BHAI", hint: "Brother, friend, or gangster." },
+    { word: "KHADOOS", hint: "Grumpy person." },
+    { word: "CHAMPU", hint: "Oily hair, nerdy look." },
+    { word: "FATTU", hint: "Coward." },
+    { word: "BAKCHODI", hint: "Nonsense talk, timepass." },
+    { word: "MAST", hint: "Cool, awesome, great." }
+  ],
+  PLACES: [
+    { word: "TAJ MAHAL", hint: "Symbol of love in Agra." },
+    { word: "GOA", hint: "Plans are made here but never happen." },
+    { word: "VARANASI", hint: "Spiritual capital, Ghats of Ganga." },
+    { word: "LADAKH", hint: "Pangong Lake, bikers paradise." },
+    { word: "KERALA", hint: "God's own country." },
+    { word: "JAIPUR", hint: "The Pink City." },
+    { word: "MUMBAI", hint: "City of Dreams, never sleeps." },
+    { word: "DELHI", hint: "Dilwalon ki... also traffic." },
+    { word: "MANALI", hint: "Snow, mountains, honeymoon destination." },
+    { word: "RISHIKESH", hint: "Yoga capital, river rafting." },
+    { word: "DARJEELING", hint: "Famous for tea and toy train." },
+    { word: "BANGALORE", hint: "Silicon Valley of India, stuck in traffic." },
+    { word: "KOLKATA", hint: "City of Joy." }
+  ]
+};
 
-  // --- HOLLYWOOD ---
-  { word: "THE GODFATHER", category: "Hollywood Classic" },
-  { word: "THE SHAWSHANK REDEMPTION", category: "Hollywood Drama" },
-  { word: "THE DARK KNIGHT", category: "Hollywood Superhero" },
-  { word: "PULP FICTION", category: "Hollywood Crime" },
-  { word: "FORREST GUMP", category: "Hollywood Drama" },
-  { word: "INCEPTION", category: "Hollywood Sci-Fi" },
-  { word: "FIGHT CLUB", category: "Hollywood Drama" },
-  { word: "THE MATRIX", category: "Hollywood Sci-Fi" },
-  { word: "GOODFELLAS", category: "Hollywood Crime" },
-  { word: "STAR WARS", category: "Hollywood Sci-Fi" },
-  { word: "THE LORD OF THE RINGS", category: "Hollywood Fantasy" },
-  { word: "TITANIC", category: "Hollywood Romance" },
-  { word: "JURASSIC PARK", category: "Hollywood Adventure" },
-  { word: "AVATAR", category: "Hollywood Sci-Fi" },
-  { word: "THE AVENGERS", category: "Hollywood Superhero" },
-  { word: "IRON MAN", category: "Hollywood Superhero" },
-  { word: "SPIDER MAN", category: "Hollywood Superhero" },
-  { word: "BLACK PANTHER", category: "Hollywood Superhero" },
-  { word: "JOKER", category: "Hollywood Drama" },
-  { word: "THE LION KING", category: "Hollywood Animation" },
-  { word: "TOY STORY", category: "Hollywood Animation" },
-  { word: "FROZEN", category: "Hollywood Animation" },
-  { word: "FINDING NEMO", category: "Hollywood Animation" },
-  { word: "SHREK", category: "Hollywood Animation" },
-  { word: "HARRY POTTER", category: "Hollywood Fantasy" },
-  { word: "PIRATES OF THE CARIBBEAN", category: "Hollywood Adventure" },
-  { word: "GLADIATOR", category: "Hollywood History" },
-  { word: "SAVING PRIVATE RYAN", category: "Hollywood War" },
-  { word: "SCHINDLERS LIST", category: "Hollywood History" },
-  { word: "THE DEPARTED", category: "Hollywood Crime" },
-  { word: "INTERSTELLAR", category: "Hollywood Sci-Fi" },
-  { word: "WHIPLASH", category: "Hollywood Drama" },
-  { word: "PARASITE", category: "Hollywood Thriller" },
-  { word: "LA LA LAND", category: "Hollywood Musical" },
-  { word: "THE WOLF OF WALL STREET", category: "Hollywood Bio" },
-  { word: "DJANGO UNCHAINED", category: "Hollywood Western" },
-  { word: "BACK TO THE FUTURE", category: "Hollywood Sci-Fi" },
-  { word: "TERMINATOR", category: "Hollywood Sci-Fi" },
-  { word: "ALIEN", category: "Hollywood Horror" },
-  { word: "THE SHINING", category: "Hollywood Horror" },
-  { word: "PSYCHO", category: "Hollywood Horror" },
-  { word: "JAWS", category: "Hollywood Thriller" },
-  { word: "ROCKY", category: "Hollywood Sport" },
-  { word: "TOP GUN", category: "Hollywood Action" },
-  { word: "DIE HARD", category: "Hollywood Action" },
-  { word: "MISSION IMPOSSIBLE", category: "Hollywood Action" },
-  { word: "MAD MAX FURY ROAD", category: "Hollywood Action" },
-  { word: "JOHN WICK", category: "Hollywood Action" },
-  { word: "THE TRUMAN SHOW", category: "Hollywood Drama" },
-  { word: "ET THE EXTRA TERRESTRIAL", category: "Hollywood Sci-Fi" }
-];
+const MESSAGES = {
+  win: ["Shabash!", "Ek number!", "Kya baat hai!", "Nailed it!", "Badhai ho!", "Full power!"],
+  lose: ["Arre yaar!", "Ab kya hoga?", "Game over!", "So close!", "Try again!"],
+  start: ["Chalo shuru!", "Let's play!", "Guess karo!", "Dimag lagao!"]
+};
 
-const WIN_MESSAGES = ["BLOCKBUSTER!", "SUPERSTAR!", "LEGENDARY!", "CRITICS CHOICE!", "OSCAR WORTHY!"];
-const LOSE_MESSAGES = ["FLOP!", "STRAIGHT TO DVD", "CANCELLED", "BUDGET CUT", "REMAKE NEEDED"];
-
-const MAX_LIVES = 6;
-const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-
-// --- Confetti Canvas (Neo-Brutalist Style) ---
-const ConfettiCanvas = ({ isActive }) => {
-  const canvasRef = useRef(null);
-  const particles = useRef([]);
-  const animationFrameId = useRef(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    let width = window.innerWidth;
-    let height = window.innerHeight;
-
-    const resizeCanvas = () => {
-      width = window.innerWidth;
-      height = window.innerHeight;
-      canvas.width = width;
-      canvas.height = height;
-    };
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    const createParticle = () => ({
-      x: Math.random() * width,
-      y: Math.random() * height - height,
-      size: Math.random() * 12 + 8,
-      speedY: Math.random() * 5 + 3,
-      speedX: (Math.random() - 0.5) * 4,
-      color: ['#facc15', '#22d3ee', '#f472b6', '#a3e635', '#000000'][Math.floor(Math.random() * 5)],
-      rotation: Math.random() * 360,
-      rotationSpeed: (Math.random() - 0.5) * 15
-    });
-
-    const update = () => {
-      ctx.clearRect(0, 0, width, height);
-      if (!isActive && particles.current.length === 0) {
-        cancelAnimationFrame(animationFrameId.current);
-        return;
-      }
-      if (isActive && particles.current.length < 100) particles.current.push(createParticle());
-
-      particles.current.forEach((p, index) => {
-        p.y += p.speedY;
-        p.x += p.speedX;
-        p.rotation += p.rotationSpeed;
-        if (p.y > height) isActive ? Object.assign(p, createParticle()) : particles.current.splice(index, 1);
-
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate((p.rotation * Math.PI) / 180);
-
-        ctx.fillStyle = p.color;
-        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
-
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 3;
-        ctx.strokeRect(-p.size / 2, -p.size / 2, p.size, p.size);
-
-        ctx.restore();
-      });
-      animationFrameId.current = requestAnimationFrame(update);
-    };
-    update();
-    return () => {
-      window.removeEventListener('resize', resizeCanvas);
-      cancelAnimationFrame(animationFrameId.current);
-    };
-  }, [isActive]);
-
-  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-50" />;
+// Keyboard Layouts
+const KEYBOARD_LAYOUTS = {
+  QWERTY: [
+    ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+    ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+    ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
+  ],
+  ABCD: [
+    ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
+    ['H', 'I', 'J', 'K', 'L', 'M', 'N'],
+    ['O', 'P', 'Q', 'R', 'S', 'T', 'U'],
+    ['V', 'W', 'X', 'Y', 'Z']
+  ]
 };
 
 // --- Components ---
 
-const HangmanFigure = ({ wrongGuesses }) => {
-  const strokeColor = "#000000";
-  const strokeWidth = 8;
+const Background = () => (
+  <div className="fixed inset-0 z-[-1] bg-black w-full h-full">
+    <div className="absolute inset-0 bg-[linear-gradient(to_right,#222_1px,transparent_1px),linear-gradient(to_bottom,#222_1px,transparent_1px)] bg-[size:24px_24px] opacity-20"></div>
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,black_100%)]" />
+  </div>
+);
+
+const HangmanFigure = ({ wrongGuesses, shake }) => {
+  const strokeColor = "#e4e4e7";
 
   return (
-    <div className="relative flex justify-center items-center h-64 lg:h-80 w-full">
-      <svg viewBox="0 0 200 250" className="h-full w-auto overflow-visible">
-        {/* Gallows */}
-        <line x1="20" y1="240" x2="180" y2="240" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="square" />
-        <line x1="100" y1="240" x2="100" y2="20" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="square" />
-        <line x1="100" y1="20" x2="150" y2="20" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="square" />
-        <line x1="150" y1="20" x2="150" y2="50" stroke={strokeColor} strokeWidth={strokeWidth} strokeLinecap="square" />
+    <div className={`relative w-48 h-56 mx-auto flex items-center justify-center opacity-90 transition-transform ${shake ? 'animate-shake' : ''}`}>
+      <svg viewBox="0 0 200 240" className="w-full h-full overflow-visible">
+        {/* Base */}
+        <line x1="20" y1="230" x2="180" y2="230" stroke={strokeColor} strokeWidth="2" strokeLinecap="round" />
+        <line x1="60" y1="230" x2="60" y2="20" stroke={strokeColor} strokeWidth="2" strokeLinecap="round" />
+        <line x1="60" y1="20" x2="140" y2="20" stroke={strokeColor} strokeWidth="2" strokeLinecap="round" />
+        <line x1="140" y1="20" x2="140" y2="50" stroke={strokeColor} strokeWidth="2" strokeLinecap="round" />
 
         {/* Head */}
-        <g className={`transition-opacity duration-300 ${wrongGuesses >= 1 ? 'opacity-100' : 'opacity-0'}`}>
-           <circle cx="150" cy="80" r="25" stroke={strokeColor} strokeWidth={strokeWidth} fill="#facc15" />
-           {wrongGuesses >= 6 && (
-             <>
-               <line x1="140" y1="75" x2="146" y2="81" stroke={strokeColor} strokeWidth={4} />
-               <line x1="146" y1="75" x2="140" y2="81" stroke={strokeColor} strokeWidth={4} />
-               <line x1="154" y1="75" x2="160" y2="81" stroke={strokeColor} strokeWidth={4} />
-               <line x1="160" y1="75" x2="154" y2="81" stroke={strokeColor} strokeWidth={4} />
-             </>
-           )}
-        </g>
-
+        {wrongGuesses >= 1 && (
+          <circle cx="140" cy="70" r="20" stroke={strokeColor} strokeWidth="2" fill="transparent" className="animate-draw" />
+        )}
         {/* Body */}
-        <g className={`transition-opacity duration-300 ${wrongGuesses >= 2 ? 'opacity-100' : 'opacity-0'}`}>
-          <line x1="150" y1="105" x2="150" y2="170" stroke={strokeColor} strokeWidth={strokeWidth} />
-        </g>
-
-        {/* Arms */}
-        <g className={`transition-opacity duration-300 ${wrongGuesses >= 3 ? 'opacity-100' : 'opacity-0'}`}>
-          <line x1="150" y1="120" x2="115" y2="145" stroke={strokeColor} strokeWidth={strokeWidth} />
-        </g>
-        <g className={`transition-opacity duration-300 ${wrongGuesses >= 4 ? 'opacity-100' : 'opacity-0'}`}>
-          <line x1="150" y1="120" x2="185" y2="145" stroke={strokeColor} strokeWidth={strokeWidth} />
-        </g>
-
-        {/* Legs */}
-        <g className={`transition-opacity duration-300 ${wrongGuesses >= 5 ? 'opacity-100' : 'opacity-0'}`}>
-          <line x1="150" y1="170" x2="120" y2="220" stroke={strokeColor} strokeWidth={strokeWidth} />
-        </g>
-        <g className={`transition-opacity duration-300 ${wrongGuesses >= 6 ? 'opacity-100' : 'opacity-0'}`}>
-          <line x1="150" y1="170" x2="180" y2="220" stroke={strokeColor} strokeWidth={strokeWidth} />
-        </g>
+        {wrongGuesses >= 2 && (
+          <line x1="140" y1="90" x2="140" y2="150" stroke={strokeColor} strokeWidth="2" strokeLinecap="round" className="animate-draw" />
+        )}
+        {/* Left Arm */}
+        {wrongGuesses >= 3 && (
+          <line x1="140" y1="100" x2="110" y2="130" stroke={strokeColor} strokeWidth="2" strokeLinecap="round" className="animate-draw" />
+        )}
+        {/* Right Arm */}
+        {wrongGuesses >= 4 && (
+          <line x1="140" y1="100" x2="170" y2="130" stroke={strokeColor} strokeWidth="2" strokeLinecap="round" className="animate-draw" />
+        )}
+        {/* Left Leg */}
+        {wrongGuesses >= 5 && (
+          <line x1="140" y1="150" x2="120" y2="190" stroke={strokeColor} strokeWidth="2" strokeLinecap="round" className="animate-draw" />
+        )}
+        {/* Right Leg */}
+        {wrongGuesses >= 6 && (
+          <line x1="140" y1="150" x2="160" y2="190" stroke={strokeColor} strokeWidth="2" strokeLinecap="round" className="animate-draw" />
+        )}
       </svg>
     </div>
   );
 };
 
-const Keyboard = ({ onGuess, guessedLetters, disabled, currentWord }) => {
-  const wordLetters = currentWord.replace(/ /g, "").split("");
+const Confetti = ({ active }) => {
+  if (!active) return null;
+  const particles = Array.from({ length: 40 });
 
   return (
-    <div className="grid grid-cols-6 lg:grid-cols-7 gap-2 lg:gap-3">
-      {ALPHABET.map((letter) => {
-        const isGuessed = guessedLetters.includes(letter);
-        const isCorrect = isGuessed && wordLetters.includes(letter);
-        const isWrong = isGuessed && !wordLetters.includes(letter);
-
-        return (
-          <button
-            key={letter}
-            onClick={() => onGuess(letter)}
-            disabled={disabled || isGuessed}
-            className={`
-              h-12 lg:h-14 text-lg lg:text-xl font-black border-4 border-black transition-all duration-150 touch-manipulation
-              ${isCorrect
-                ? 'bg-[#a3e635] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] translate-x-0 translate-y-0'
-                : isWrong
-                  ? 'bg-[#f87171] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] translate-x-0 translate-y-0'
-                  : 'bg-white text-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:bg-[#22d3ee] hover:-translate-y-1 hover:shadow-[6px_8px_0px_0px_rgba(0,0,0,1)] active:translate-y-1 active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
-              }
-            `}
-          >
-            {letter}
-          </button>
-        );
-      })}
-    </div>
-  );
-};
-
-const WordDisplay = ({ word, guessedLetters, reveal }) => {
-  const words = word.split(" ");
-
-  return (
-    <div className="flex flex-wrap justify-center gap-x-8 gap-y-6 my-6">
-      {words.map((part, wIndex) => (
-        <div key={wIndex} className="flex flex-wrap justify-center gap-2">
-          {part.split("").map((letter, index) => {
-            const isGuessed = guessedLetters.includes(letter);
-            const showLetter = isGuessed || reveal;
-            const isMissed = reveal && !isGuessed;
-
-            return (
-              <div
-                key={`${wIndex}-${index}`}
-                className={`
-                  flex items-center justify-center w-10 h-14 lg:w-12 lg:h-16
-                  border-b-[6px] text-2xl lg:text-3xl font-black
-                  ${isMissed
-                    ? 'border-[#f87171] text-[#f87171]'
-                    : 'border-black text-black'
-                  }
-                `}
-              >
-                <span className={`${showLetter ? 'visible' : 'invisible'}`}>
-                  {letter}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-50">
+      {particles.map((_, i) => (
+        <div
+          key={i}
+          className="absolute w-2 h-2 rounded-full animate-confetti"
+          style={{
+            backgroundColor: ['#ffffff', '#a1a1aa', '#71717a', '#52525b'][i % 4],
+            left: `${Math.random() * 100}%`,
+            animationDelay: `${Math.random() * 0.5}s`,
+            animationDuration: `${1.5 + Math.random()}s`
+          }}
+        />
       ))}
     </div>
   );
 };
-
-const HintPanel = ({ word, hintsUsed, onUseHint, guessedLetters, disabled }) => {
-  const wordNoSpaces = word.replace(/ /g, "");
-  const wordCount = word.split(" ").length;
-  const letterCount = wordNoSpaces.length;
-  const vowels = wordNoSpaces.split("").filter(l => "AEIOU".includes(l)).length;
-
-  // Find an unrevealed letter for hint 3
-  const unrevealedLetters = wordNoSpaces.split("").filter(l => !guessedLetters.includes(l));
-  const randomUnrevealed = unrevealedLetters.length > 0
-    ? unrevealedLetters[Math.floor(Math.random() * unrevealedLetters.length)]
-    : null;
-
-  const hints = [
-    {
-      id: 1,
-      label: "FIRST LETTER",
-      value: `Starts with "${word[0]}"`,
-      color: "bg-[#facc15]"
-    },
-    {
-      id: 2,
-      label: "STRUCTURE",
-      value: `${letterCount} letters${wordCount > 1 ? `, ${wordCount} words` : ''} • ${vowels} vowels`,
-      color: "bg-[#22d3ee]"
-    },
-    {
-      id: 3,
-      label: "REVEAL LETTER",
-      value: randomUnrevealed ? `Contains "${randomUnrevealed}"` : "All revealed!",
-      color: "bg-[#f472b6]"
-    }
-  ];
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2 mb-4">
-        <Lightbulb className="w-5 h-5" strokeWidth={3} />
-        <span className="font-black text-sm uppercase tracking-wider">HINTS</span>
-      </div>
-
-      {hints.map((hint) => (
-        <div key={hint.id} className="relative">
-          {hintsUsed.includes(hint.id) ? (
-            <div className={`${hint.color} border-4 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}>
-              <div className="text-xs font-black uppercase mb-1">{hint.label}</div>
-              <div className="text-sm font-bold">{hint.value}</div>
-            </div>
-          ) : (
-            <button
-              onClick={() => onUseHint(hint.id)}
-              disabled={disabled}
-              className="w-full text-left bg-white border-4 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <div className="text-xs font-black uppercase mb-1 flex items-center gap-2">
-                {hint.label}
-                <Zap className="w-3 h-3" />
-              </div>
-              <div className="text-sm font-bold text-gray-500">Click to reveal</div>
-            </button>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-};
-
-const ConfirmModal = ({ isOpen, onConfirm, onCancel, title, message }) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="bg-white border-8 border-black p-6 max-w-sm w-full shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] animate-in">
-        <h3 className="text-2xl font-black mb-4">{title}</h3>
-        <p className="text-sm font-bold mb-6">{message}</p>
-        <div className="flex gap-3">
-          <button
-            onClick={onCancel}
-            className="flex-1 py-3 px-4 font-black border-4 border-black bg-white hover:bg-gray-100 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-1 active:shadow-none transition-all"
-          >
-            CANCEL
-          </button>
-          <button
-            onClick={onConfirm}
-            className="flex-1 py-3 px-4 font-black border-4 border-black bg-[#f87171] hover:bg-[#ef4444] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-1 active:shadow-none transition-all"
-          >
-            NEW GAME
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// --- Main App ---
 
 export default function App() {
-  const [currentWordData, setCurrentWordData] = useState({ word: "", category: "" });
-  const [guessedLetters, setGuessedLetters] = useState([]);
-  const [status, setStatus] = useState("playing");
-  const [hintsUsed, setHintsUsed] = useState([]);
-  const [endMessage, setEndMessage] = useState("");
-  const [showConfirm, setShowConfirm] = useState(false);
+  // Game State
+  const [category, setCategory] = useState('BOLLYWOOD');
+  const [currentWordObj, setCurrentWordObj] = useState({ word: '', hint: '' });
+  const [guessedLetters, setGuessedLetters] = useState(new Set());
+  const [wrongGuesses, setWrongGuesses] = useState(0);
+  const [gameStatus, setGameStatus] = useState('playing');
+  const [score, setScore] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [message, setMessage] = useState(MESSAGES.start[0]);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [hintRevealed, setHintRevealed] = useState(false);
+  const [keyboardLayout, setKeyboardLayout] = useState('QWERTY');
+  const [usedWords, setUsedWords] = useState(new Set());
+  const [shake, setShake] = useState(false);
 
-  useEffect(() => {
-    startNewGame();
-  }, []);
+  const gameContainerRef = useRef(null);
 
-  const startNewGame = useCallback(() => {
-    const randomData = MOVIE_DATA[Math.floor(Math.random() * MOVIE_DATA.length)];
-    setCurrentWordData(randomData);
-    setGuessedLetters([]);
-    setStatus("playing");
-    setHintsUsed([]);
-    setEndMessage("");
-    setShowConfirm(false);
-  }, []);
+  const MAX_MISTAKES = 6;
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (status !== 'playing' || showConfirm) return;
-      const char = e.key.toUpperCase();
-      if (ALPHABET.includes(char)) handleGuess(char);
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [status, guessedLetters, currentWordData, showConfirm]);
+  // Select random word avoiding recently used ones
+  const selectRandomWordObj = useCallback((cat) => {
+    const words = GAME_DATA[cat];
+    const availableWords = words.filter(w => !usedWords.has(w.word));
 
-  const handleGuess = (letter) => {
-    if (status !== 'playing' || guessedLetters.includes(letter)) return;
+    // Reset used words if we've gone through most of them
+    if (availableWords.length === 0) {
+      setUsedWords(new Set());
+      return words[Math.floor(Math.random() * words.length)];
+    }
 
-    const newGuessed = [...guessedLetters, letter];
+    return availableWords[Math.floor(Math.random() * availableWords.length)];
+  }, [usedWords]);
+
+  // Initialize / Reset
+  const startNewGame = useCallback((newCategory = category) => {
+    const newWordObj = selectRandomWordObj(newCategory);
+
+    // Track used words
+    setUsedWords(prev => new Set([...prev, newWordObj.word]));
+
+    setCategory(newCategory);
+    setCurrentWordObj(newWordObj);
+    setGuessedLetters(new Set());
+    setWrongGuesses(0);
+    setGameStatus('playing');
+    setShowCategoryModal(false);
+    setHintRevealed(false);
+    setShake(false);
+
+    const startMsgs = MESSAGES.start;
+    setMessage(startMsgs[Math.floor(Math.random() * startMsgs.length)]);
+  }, [category, selectRandomWordObj]);
+
+  // Handle letter guess
+  const handleGuess = useCallback((letter) => {
+    if (gameStatus !== 'playing' || guessedLetters.has(letter)) return;
+
+    const newGuessed = new Set(guessedLetters).add(letter);
     setGuessedLetters(newGuessed);
 
-    const wordNoSpaces = currentWordData.word.replace(/ /g, "");
-    const wrongGuesses = newGuessed.filter(l => !wordNoSpaces.includes(l)).length;
-    const isWin = wordNoSpaces.split("").every(l => newGuessed.includes(l));
-    const isLoss = wrongGuesses >= MAX_LIVES;
+    if (!currentWordObj.word.includes(letter)) {
+      // Wrong guess
+      const newWrong = wrongGuesses + 1;
+      setWrongGuesses(newWrong);
 
-    if (isWin) {
-      setTimeout(() => {
-        setStatus("won");
-        setEndMessage(WIN_MESSAGES[Math.floor(Math.random() * WIN_MESSAGES.length)]);
-      }, 800);
-    } else if (isLoss) {
-      setStatus("lost");
-      setEndMessage(LOSE_MESSAGES[Math.floor(Math.random() * LOSE_MESSAGES.length)]);
-    }
-  };
+      // Trigger shake animation
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
 
-  const handleHint = (hintId) => {
-    if (status !== 'playing' || hintsUsed.includes(hintId)) return;
-    setHintsUsed([...hintsUsed, hintId]);
-  };
-
-  const handleNewGameClick = () => {
-    if (status === 'playing' && guessedLetters.length > 0) {
-      setShowConfirm(true);
+      if (newWrong >= MAX_MISTAKES) {
+        setGameStatus('lost');
+        setMessage(MESSAGES.lose[Math.floor(Math.random() * MESSAGES.lose.length)]);
+        setStreak(0);
+      }
     } else {
-      startNewGame();
+      // Correct guess - check win
+      const lettersToGuess = currentWordObj.word.split('').filter(c => c !== ' ');
+      const isWon = lettersToGuess.every(l => newGuessed.has(l));
+
+      if (isWon) {
+        setGameStatus('won');
+        const winMsg = MESSAGES.win[Math.floor(Math.random() * MESSAGES.win.length)];
+        setMessage(winMsg);
+
+        // Score: base 100, -30 for hint, +10 per streak
+        const baseScore = hintRevealed ? 70 : 100;
+        const streakBonus = streak * 10;
+        setScore(s => s + baseScore + streakBonus);
+        setStreak(s => s + 1);
+      }
     }
+  }, [gameStatus, guessedLetters, currentWordObj.word, wrongGuesses, hintRevealed, streak]);
+
+  const revealHint = useCallback(() => {
+    if (gameStatus === 'playing' && !hintRevealed) {
+      setHintRevealed(true);
+    }
+  }, [gameStatus, hintRevealed]);
+
+  const toggleLayout = useCallback(() => {
+    setKeyboardLayout(prev => prev === 'QWERTY' ? 'ABCD' : 'QWERTY');
+  }, []);
+
+  // Change category (resets streak)
+  const handleCategoryChange = useCallback((newCat) => {
+    setStreak(0);
+    setUsedWords(new Set());
+    startNewGame(newCat);
+  }, [startNewGame]);
+
+  // Initialize game
+  useEffect(() => {
+    startNewGame('BOLLYWOOD');
+  }, []);
+
+  // Keyboard handler
+  useEffect(() => {
+    const handleKeydown = (e) => {
+      if (showCategoryModal) return;
+
+      const char = e.key.toUpperCase();
+      if (char >= 'A' && char <= 'Z') {
+        handleGuess(char);
+      }
+
+      // Escape to close modal
+      if (e.key === 'Escape' && showCategoryModal) {
+        setShowCategoryModal(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeydown);
+    return () => window.removeEventListener('keydown', handleKeydown);
+  }, [handleGuess, showCategoryModal]);
+
+  // Derived UI values
+  const wordLetters = currentWordObj.word.split('');
+  const currentLayout = KEYBOARD_LAYOUTS[keyboardLayout];
+
+  // Check if a letter in the word was missed (for game over display)
+  const isLetterMissed = (char) => {
+    return gameStatus === 'lost' && char !== ' ' && !guessedLetters.has(char);
   };
 
-  const wordNoSpaces = currentWordData.word ? currentWordData.word.replace(/ /g, "") : "";
-  const wrongGuessesCount = useMemo(() =>
-    guessedLetters.filter(l => !wordNoSpaces.includes(l)).length,
-    [guessedLetters, currentWordData.word]
-  );
-
-  const livesLeft = MAX_LIVES - wrongGuessesCount;
+  // Check keyboard button state
+  const getKeyState = (char) => {
+    if (!guessedLetters.has(char)) return 'unused';
+    if (currentWordObj.word.includes(char)) return 'correct';
+    return 'wrong';
+  };
 
   return (
-    <div className="min-h-screen bg-[#e5e5e5] text-black flex flex-col overflow-hidden relative selection:bg-[#facc15] selection:text-black">
-
-      {/* Grid Background */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#d4d4d4_2px,transparent_2px),linear-gradient(to_bottom,#d4d4d4_2px,transparent_2px)] bg-[size:32px_32px] pointer-events-none"></div>
+    <div className="min-h-screen bg-black text-zinc-200 font-light font-sans selection:bg-white/20">
+      <Background />
 
       {/* Header */}
-      <header className="relative z-20 bg-[#facc15] border-b-8 border-black">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-black text-[#facc15] border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)]">
-              <Film className="w-6 h-6 lg:w-8 lg:h-8" strokeWidth={3} />
+      <header className="relative z-10 pt-4 sm:pt-6 px-4 md:px-8 flex justify-between items-center max-w-5xl mx-auto border-b border-white/5 pb-4">
+        <div className="flex flex-col">
+          <h1 className="text-xl sm:text-2xl md:text-4xl font-thin tracking-[0.15em] sm:tracking-[0.2em] text-white uppercase">
+            Desi Hangman
+          </h1>
+          <span className="text-[10px] sm:text-xs text-zinc-500 tracking-widest uppercase mt-1">
+            {category} Edition
+          </span>
+        </div>
+
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex flex-col items-end text-[10px] sm:text-xs tracking-widest">
+            <div className="flex items-center gap-2 text-zinc-400">
+              <span className="hidden sm:inline">SCORE</span>
+              <span className="sm:hidden">SC</span>
+              <span className="text-white font-normal">{score}</span>
             </div>
-            <div>
-              <h1 className="text-2xl lg:text-4xl font-black tracking-tighter uppercase">MOVIE HANGMAN</h1>
-              <p className="text-xs lg:text-sm font-bold uppercase tracking-wider hidden sm:block">Guess the Film</p>
+            <div className="flex items-center gap-2 text-zinc-400">
+              <span className="hidden sm:inline">STREAK</span>
+              <span className="sm:hidden">ST</span>
+              <span className="text-white font-normal">{streak}</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 lg:gap-4">
-            {/* Lives */}
-            <div className="flex items-center gap-2 px-4 py-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-               <Heart className={`w-5 h-5 lg:w-6 lg:h-6 ${livesLeft <= 2 ? 'fill-[#f87171] text-[#f87171] animate-pulse' : 'fill-black'}`} strokeWidth={3} />
-               <span className="text-lg lg:text-xl font-black">{livesLeft}</span>
-            </div>
-
-            {/* New Game Button */}
-            <button
-              onClick={handleNewGameClick}
-              className="flex items-center gap-2 px-4 py-2 bg-[#22d3ee] border-4 border-black font-black text-sm lg:text-base shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 active:translate-y-1 active:shadow-none transition-all"
-            >
-              <RotateCcw className="w-4 h-4 lg:w-5 lg:h-5" strokeWidth={3} />
-              <span className="hidden sm:inline">NEW GAME</span>
-            </button>
-          </div>
+          <button
+            onClick={() => setShowCategoryModal(true)}
+            className="p-2 sm:px-4 sm:py-2 border border-zinc-800 hover:border-zinc-600 text-zinc-400 hover:text-white transition-colors text-xs tracking-widest"
+            aria-label="Change theme"
+          >
+            <span className="hidden sm:inline">THEME</span>
+            <Settings size={16} className="sm:hidden" />
+          </button>
         </div>
       </header>
 
-      {/* Main Content - Desktop Split Layout */}
-      <main className="flex-1 w-full max-w-7xl mx-auto p-4 lg:p-8 z-10">
+      {/* Main Game Area */}
+      <main ref={gameContainerRef} className="relative z-10 max-w-5xl mx-auto px-4 py-6 sm:py-8 flex flex-col md:flex-row gap-8 md:gap-12 items-start justify-center">
 
-        {/* Category Badge */}
-        <div className="flex justify-center mb-6">
-          <div className="px-6 py-3 bg-[#f472b6] border-4 border-black text-sm font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            {currentWordData.category}
+        {/* Left Column: Drawing & Info */}
+        <div className="w-full md:flex-1 flex flex-col items-center">
+          <div className="relative bg-zinc-900/30 border border-zinc-800 p-6 sm:p-8 w-full max-w-sm backdrop-blur-sm">
+            {/* Lives indicator */}
+            <div className="flex justify-between items-center mb-6 sm:mb-8 w-full">
+              <span className="text-[10px] font-medium text-zinc-600 tracking-[0.15em]">LIVES</span>
+              <div className="flex gap-1">
+                {[...Array(MAX_MISTAKES)].map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-1.5 w-4 sm:w-6 transition-all duration-300 ${
+                      i < (MAX_MISTAKES - wrongGuesses) ? 'bg-white' : 'bg-zinc-800'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <HangmanFigure wrongGuesses={wrongGuesses} shake={shake} />
+
+            {/* Message */}
+            <div className="mt-6 sm:mt-8 text-center min-h-[2.5rem]">
+              <p className={`text-sm tracking-wide transition-all duration-300 ${
+                gameStatus === 'won' ? 'text-white font-normal' :
+                gameStatus === 'lost' ? 'text-zinc-500' : 'text-zinc-500'
+              }`}>
+                {message}
+              </p>
+            </div>
+
+            {/* Play Again Button (shown inside card on game end) */}
+            {gameStatus !== 'playing' && (
+              <button
+                onClick={() => startNewGame()}
+                className="mt-6 w-full py-3 px-6 bg-white text-black font-normal tracking-widest text-sm flex items-center justify-center gap-2 hover:bg-zinc-200 transition-colors active:scale-95"
+                aria-label="Play again"
+              >
+                <RotateCcw size={16} />
+                PLAY AGAIN
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Desktop: Side by Side | Mobile: Stacked */}
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+        {/* Right Column: Game Interaction */}
+        <div className="w-full md:flex-[1.5] max-w-2xl">
 
-          {/* LEFT PANEL - Hangman & Word */}
-          <div className="lg:w-1/2">
-            <div className="bg-white border-8 border-black p-6 lg:p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] h-full">
-              <HangmanFigure wrongGuesses={wrongGuessesCount} />
-              <WordDisplay
-                word={currentWordData.word}
-                guessedLetters={guessedLetters}
-                reveal={status === 'lost'}
-              />
-            </div>
+          {/* Word Display */}
+          <div className="mb-8 sm:mb-10 flex flex-wrap justify-center gap-x-2 sm:gap-x-3 gap-y-4 min-h-[60px] sm:min-h-[80px]">
+            {wordLetters.map((char, i) => {
+              if (char === ' ') return <div key={i} className="w-3 sm:w-6"></div>;
+
+              const isGuessed = guessedLetters.has(char);
+              const isMissed = isLetterMissed(char);
+              const showChar = isGuessed || gameStatus === 'lost';
+
+              return (
+                <div
+                  key={i}
+                  className={`
+                    flex items-end justify-center w-7 h-10 sm:w-10 sm:h-14 md:w-12 md:h-16
+                    border-b-2 font-light text-xl sm:text-2xl md:text-3xl transition-all duration-300
+                    ${!showChar ? 'border-zinc-700' :
+                      isMissed ? 'border-zinc-600 text-zinc-500' :
+                      'border-white text-white'}
+                  `}
+                >
+                  <span className={showChar ? 'opacity-100' : 'opacity-0'}>
+                    {char}
+                  </span>
+                </div>
+              );
+            })}
           </div>
 
-          {/* RIGHT PANEL - Keyboard & Hints */}
-          <div className="lg:w-1/2 flex flex-col gap-6">
+          {/* Controls Bar */}
+          <div className="flex justify-between items-start mb-4 sm:mb-6 px-1 gap-4">
+            {/* Hint Section */}
+            <div className="flex-1 min-w-0">
+              {!hintRevealed && gameStatus === 'playing' ? (
+                <button
+                  onClick={revealHint}
+                  className="flex items-center gap-2 text-[10px] sm:text-xs tracking-widest text-zinc-500 hover:text-white transition-colors py-2"
+                  aria-label="Reveal hint"
+                >
+                  <Lightbulb size={14} className="shrink-0" />
+                  <span>HINT?</span>
+                </button>
+              ) : hintRevealed ? (
+                <div className="text-[11px] sm:text-xs text-zinc-400 italic py-2 pr-2">
+                  <span className="flex items-start gap-2">
+                    <Lightbulb size={12} className="mt-0.5 shrink-0 text-zinc-600" />
+                    <span className="line-clamp-2">{currentWordObj.hint}</span>
+                  </span>
+                </div>
+              ) : null}
+            </div>
 
-            {/* Keyboard */}
-            <div className="bg-white border-8 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-              <div className="text-sm font-black uppercase tracking-wider mb-4 text-center lg:text-left">
-                SELECT A LETTER
+            {/* Layout Toggle */}
+            <button
+              onClick={toggleLayout}
+              className="shrink-0 flex items-center gap-1.5 text-[10px] tracking-widest text-zinc-600 hover:text-zinc-400 transition-colors uppercase border border-zinc-800 px-2 sm:px-3 py-1.5 sm:py-2"
+              aria-label={`Switch to ${keyboardLayout === 'QWERTY' ? 'ABCD' : 'QWERTY'} layout`}
+            >
+              <Keyboard size={12} />
+              <span className="hidden sm:inline">{keyboardLayout}</span>
+            </button>
+          </div>
+
+          {/* Keyboard */}
+          <div className="p-1" role="group" aria-label="Letter keyboard">
+            {currentLayout.map((row, rowIndex) => (
+              <div key={rowIndex} className="flex justify-center gap-1 sm:gap-1.5 mb-1 sm:mb-1.5">
+                {row.map((char) => {
+                  const keyState = getKeyState(char);
+
+                  let btnStyle = "bg-transparent text-zinc-400 border-zinc-800 hover:border-zinc-600 hover:bg-zinc-900/50";
+                  if (keyState === 'correct') {
+                    btnStyle = "bg-white text-black border-white";
+                  } else if (keyState === 'wrong') {
+                    btnStyle = "bg-zinc-900/80 text-zinc-700 border-zinc-800";
+                  }
+
+                  return (
+                    <button
+                      key={char}
+                      disabled={keyState !== 'unused' || gameStatus !== 'playing'}
+                      onClick={() => handleGuess(char)}
+                      className={`
+                        h-11 sm:h-12 md:h-14 min-w-[2.2rem] sm:min-w-[2.5rem] md:min-w-[3rem]
+                        rounded border text-sm sm:text-base font-light
+                        transition-all duration-150 active:scale-95
+                        disabled:cursor-not-allowed
+                        ${btnStyle}
+                      `}
+                      aria-label={`Letter ${char}`}
+                      aria-pressed={keyState !== 'unused'}
+                    >
+                      {char}
+                    </button>
+                  );
+                })}
               </div>
-              <Keyboard
-                onGuess={handleGuess}
-                guessedLetters={guessedLetters}
-                disabled={status !== 'playing'}
-                currentWord={currentWordData.word}
-              />
-            </div>
-
-            {/* Hints */}
-            <div className="bg-white border-8 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-              <HintPanel
-                word={currentWordData.word}
-                hintsUsed={hintsUsed}
-                onUseHint={handleHint}
-                guessedLetters={guessedLetters}
-                disabled={status !== 'playing'}
-              />
-            </div>
+            ))}
           </div>
+
+          {/* Keyboard shortcut hint */}
+          <p className="text-center text-[10px] text-zinc-700 mt-4 tracking-widest hidden md:block">
+            USE YOUR KEYBOARD TO TYPE
+          </p>
         </div>
       </main>
 
-      {/* Win/Loss Modal */}
-      {status !== 'playing' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className={`${status === 'won' ? 'bg-[#a3e635]' : 'bg-[#f87171]'} border-8 border-black p-8 max-w-md w-full text-center shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] animate-in`}>
+      {/* Category Modal */}
+      {showCategoryModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-sm animate-fade-in"
+          onClick={(e) => e.target === e.currentTarget && setShowCategoryModal(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+        >
+          <div className="bg-black border border-zinc-800 w-full max-w-lg max-h-[85vh] overflow-y-auto p-6 sm:p-8 relative">
+            <button
+              onClick={() => setShowCategoryModal(false)}
+              className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors p-2"
+              aria-label="Close modal"
+            >
+              <X size={20} />
+            </button>
 
-            <div className="flex justify-center mb-6">
-              {status === 'won' ? (
-                <div className="p-4 bg-black rounded-none">
-                  <Trophy className="w-16 h-16 text-[#facc15]" strokeWidth={2} />
-                </div>
-              ) : (
-                <div className="p-4 bg-black rounded-none">
-                  <Frown className="w-16 h-16 text-white" strokeWidth={2} />
-                </div>
-              )}
-            </div>
-
-            <h2 className="text-4xl lg:text-5xl font-black mb-2 uppercase tracking-tighter">
-              {status === 'won' ? 'YOU WON!' : 'GAME OVER'}
+            <h2 id="modal-title" className="text-xl sm:text-2xl font-thin text-white tracking-[0.15em] mb-2 uppercase">
+              Select Theme
             </h2>
-
-            <p className="text-xl font-black mb-6 border-b-4 border-black inline-block pb-2">
-              {endMessage}
+            <p className="text-[10px] sm:text-xs text-zinc-500 tracking-widest mb-6 sm:mb-8 uppercase">
+              Choose your arena
             </p>
 
-            <div className="mb-6 p-4 bg-white border-4 border-black">
-               <div className="text-xs font-black uppercase mb-2">THE MOVIE WAS</div>
-               <div className="text-xl lg:text-2xl font-black">{currentWordData.word}</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {Object.keys(GAME_DATA).map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => handleCategoryChange(cat)}
+                  className={`
+                    w-full p-4 sm:p-5 border text-left transition-all duration-200 group active:scale-98
+                    ${category === cat
+                      ? 'bg-white text-black border-white'
+                      : 'bg-zinc-900/50 text-zinc-400 border-zinc-800 hover:border-zinc-600 hover:text-zinc-200'}
+                  `}
+                >
+                  <span className="text-xs sm:text-sm font-light tracking-[0.15em] uppercase">
+                    {cat}
+                  </span>
+                  <span className="block text-[10px] mt-1 opacity-60">
+                    {GAME_DATA[cat].length} words
+                  </span>
+                </button>
+              ))}
             </div>
-
-            <button
-              onClick={startNewGame}
-              className="w-full py-4 px-6 font-black text-xl border-4 border-black bg-black text-white hover:bg-white hover:text-black transition-colors flex items-center justify-center gap-3 shadow-[4px_4px_0px_0px_rgba(100,100,100,1)] active:translate-y-1 active:shadow-none"
-            >
-              <RefreshCw className="w-6 h-6" strokeWidth={3} />
-              PLAY AGAIN
-            </button>
           </div>
         </div>
       )}
 
-      {/* Confirm New Game Modal */}
-      <ConfirmModal
-        isOpen={showConfirm}
-        onConfirm={startNewGame}
-        onCancel={() => setShowConfirm(false)}
-        title="START NEW GAME?"
-        message="Your current progress will be lost. Are you sure you want to start a new game?"
-      />
+      {/* Confetti Effect on Win */}
+      <Confetti active={gameStatus === 'won'} />
 
-      <ConfettiCanvas isActive={status === 'won'} />
+      <style>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.3s ease-out forwards;
+        }
+
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-8px); }
+          75% { transform: translateX(8px); }
+        }
+        .animate-shake {
+          animation: shake 0.3s ease-in-out;
+        }
+
+        @keyframes draw {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .animate-draw {
+          animation: draw 0.3s ease-out forwards;
+        }
+
+        @keyframes confetti {
+          0% {
+            transform: translateY(-100vh) rotate(0deg);
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(100vh) rotate(720deg);
+            opacity: 0;
+          }
+        }
+        .animate-confetti {
+          animation: confetti 2s ease-out forwards;
+        }
+
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+
+        .active\\:scale-98:active {
+          transform: scale(0.98);
+        }
+      `}</style>
     </div>
   );
 }
