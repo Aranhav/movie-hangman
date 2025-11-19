@@ -1,0 +1,10 @@
+# robots.txt for Movie Hangman
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://movie-hangman.up.railway.app/sitemap.xml
+
+# Crawl-delay (optional, for politeness)
+Crawl-delay: 1
