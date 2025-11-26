@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { RotateCcw, Lightbulb, X, Keyboard, Settings } from 'lucide-react';
+import CookieConsent from './components/CookieConsent';
 
 // --- Game Data (Expanded & Contextual) ---
 const GAME_DATA = {
@@ -399,7 +400,7 @@ export default function App() {
             {/* Message */}
             <div className="mt-6 sm:mt-8 text-center min-h-[3rem]">
               <p className={`text-xl sm:text-2xl tracking-wide transition-all duration-300 font-bold transform -rotate-1 ${gameStatus === 'won' ? 'text-green-700' :
-                  gameStatus === 'lost' ? 'text-red-700' : 'text-slate-600'
+                gameStatus === 'lost' ? 'text-red-700' : 'text-slate-600'
                 }`}>
                 {message}
               </p>
@@ -504,8 +505,9 @@ export default function App() {
                       disabled={keyState !== 'unused' || gameStatus !== 'playing'}
                       onClick={() => handleGuess(char)}
                       className={`
-                        h-12 sm:h-14 md:h-16 min-w-[2.5rem] sm:min-w-[3rem] md:min-w-[3.5rem]
-                        rounded-sm border-2 text-xl sm:text-2xl font-hand
+                        h-12 sm:h-14 md:h-16 flex-1 sm:flex-none sm:w-12 md:w-14
+                        max-w-[2.5rem] sm:max-w-none
+                        rounded-sm border-2 text-lg sm:text-2xl font-hand
                         transition-all duration-150 active:scale-95
                         disabled:cursor-not-allowed scribble-border
                         ${btnStyle}
@@ -577,6 +579,15 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Footer */}
+      <footer className="relative z-10 py-6 text-center text-slate-500 text-sm font-hand font-bold tracking-widest">
+        <p>POWERED BY <span className="text-blue-900 text-base">KAIROSS</span></p>
+        <p className="text-[10px] mt-1 opacity-70">&copy; {new Date().getFullYear()} All Rights Reserved</p>
+      </footer>
+
+      {/* GDPR Cookie Consent */}
+      <CookieConsent />
 
       {/* Confetti Effect on Win */}
       <Confetti active={gameStatus === 'won'} />
