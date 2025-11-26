@@ -6,6 +6,7 @@
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -19,4 +20,34 @@
 /* Ensure proper touch handling on mobile */
 .touch-manipulation {
   touch-action: manipulation;
+}
+
+/* Pen and Paper Theme Utilities */
+.font-hand {
+  font-family: 'Patrick Hand', cursive;
+}
+
+.paper-pattern {
+  background-color: #fdfbf7;
+  background-image:
+    linear-gradient(#e5e7eb 1px, transparent 1px),
+    linear-gradient(90deg, #ef4444 1px, transparent 1px);
+  background-size: 100% 2rem, 2rem 100%;
+  background-position: 0 1.5rem, 2rem 0;
+}
+
+/* Only show the red margin line on the left */
+.paper-pattern-ruled {
+  background-color: #fdfbf7;
+  background-image:
+    linear-gradient(#94a3b8 1px, transparent 1px),
+    linear-gradient(90deg, #ef4444 1px, transparent 1px);
+  background-size: 100% 2rem, 100% 100%;
+  background-position: 0 1.5rem, 3rem 0;
+  background-repeat: repeat-y, no-repeat;
+}
+
+.scribble-border {
+  border-radius: 2px 255px 3px 25px / 255px 5px 225px 3px;
+  border: 2px solid #1e3a8a;
 }

@@ -116,14 +116,11 @@ const KEYBOARD_LAYOUTS = {
 // --- Components ---
 
 const Background = () => (
-  <div className="fixed inset-0 z-[-1] bg-black w-full h-full">
-    <div className="absolute inset-0 bg-[linear-gradient(to_right,#222_1px,transparent_1px),linear-gradient(to_bottom,#222_1px,transparent_1px)] bg-[size:24px_24px] opacity-20"></div>
-    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,black_100%)]" />
-  </div>
+  <div className="fixed inset-0 z-[-1] paper-pattern-ruled w-full h-full pointer-events-none" />
 );
 
 const HangmanFigure = ({ wrongGuesses, shake }) => {
-  const strokeColor = "#e4e4e7";
+  const strokeColor = "#1e3a8a"; // Blue ink color
 
   return (
     <div className={`relative w-48 h-56 mx-auto flex items-center justify-center opacity-90 transition-transform ${shake ? 'animate-shake' : ''}`}>
@@ -174,7 +171,7 @@ const Confetti = ({ active }) => {
           key={i}
           className="absolute w-2 h-2 rounded-full animate-confetti"
           style={{
-            backgroundColor: ['#ffffff', '#a1a1aa', '#71717a', '#52525b'][i % 4],
+            backgroundColor: ['#1e3a8a', '#dc2626', '#16a34a', '#d97706'][i % 4],
             left: `${Math.random() * 100}%`,
             animationDelay: `${Math.random() * 0.5}s`,
             animationDuration: `${1.5 + Math.random()}s`
@@ -338,41 +335,41 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-zinc-200 font-light font-sans selection:bg-white/20">
+    <div className="min-h-screen text-slate-800 font-hand selection:bg-blue-200">
       <Background />
 
       {/* Header */}
-      <header className="relative z-10 pt-4 sm:pt-6 px-4 md:px-8 flex justify-between items-center max-w-5xl mx-auto border-b border-white/5 pb-4">
+      <header className="relative z-10 pt-4 sm:pt-6 px-4 md:px-8 flex justify-between items-center max-w-5xl mx-auto border-b-2 border-slate-800/20 pb-4">
         <div className="flex flex-col">
-          <h1 className="text-xl sm:text-2xl md:text-4xl font-thin tracking-[0.15em] sm:tracking-[0.2em] text-white uppercase">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-wide text-blue-900 uppercase transform -rotate-1">
             Desi Hangman
           </h1>
-          <span className="text-[10px] sm:text-xs text-zinc-500 tracking-widest uppercase mt-1">
+          <span className="text-sm sm:text-base text-slate-600 tracking-widest uppercase mt-1 font-bold">
             {category} Edition
           </span>
         </div>
 
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className="flex flex-col items-end text-[10px] sm:text-xs tracking-widest">
-            <div className="flex items-center gap-2 text-zinc-400">
+          <div className="flex flex-col items-end text-xs sm:text-sm tracking-widest font-bold">
+            <div className="flex items-center gap-2 text-slate-600">
               <span className="hidden sm:inline">SCORE</span>
               <span className="sm:hidden">SC</span>
-              <span className="text-white font-normal">{score}</span>
+              <span className="text-blue-900 text-lg">{score}</span>
             </div>
-            <div className="flex items-center gap-2 text-zinc-400">
+            <div className="flex items-center gap-2 text-slate-600">
               <span className="hidden sm:inline">STREAK</span>
               <span className="sm:hidden">ST</span>
-              <span className="text-white font-normal">{streak}</span>
+              <span className="text-blue-900 text-lg">{streak}</span>
             </div>
           </div>
 
           <button
             onClick={() => setShowCategoryModal(true)}
-            className="p-2 sm:px-4 sm:py-2 border border-zinc-800 hover:border-zinc-600 text-zinc-400 hover:text-white transition-colors text-xs tracking-widest"
+            className="p-2 sm:px-4 sm:py-2 border-2 border-slate-800 text-slate-700 hover:text-blue-900 hover:border-blue-900 transition-colors text-sm font-bold tracking-widest scribble-border bg-white/50"
             aria-label="Change theme"
           >
             <span className="hidden sm:inline">THEME</span>
-            <Settings size={16} className="sm:hidden" />
+            <Settings size={18} className="sm:hidden" />
           </button>
         </div>
       </header>
@@ -382,17 +379,16 @@ export default function App() {
 
         {/* Left Column: Drawing & Info */}
         <div className="w-full md:flex-1 flex flex-col items-center">
-          <div className="relative bg-zinc-900/30 border border-zinc-800 p-6 sm:p-8 w-full max-w-sm backdrop-blur-sm">
+          <div className="relative p-6 sm:p-8 w-full max-w-sm">
             {/* Lives indicator */}
             <div className="flex justify-between items-center mb-6 sm:mb-8 w-full">
-              <span className="text-[10px] font-medium text-zinc-600 tracking-[0.15em]">LIVES</span>
+              <span className="text-sm font-bold text-slate-500 tracking-widest">LIVES</span>
               <div className="flex gap-1">
                 {[...Array(MAX_MISTAKES)].map((_, i) => (
                   <div
                     key={i}
-                    className={`h-1.5 w-4 sm:w-6 transition-all duration-300 ${
-                      i < (MAX_MISTAKES - wrongGuesses) ? 'bg-white' : 'bg-zinc-800'
-                    }`}
+                    className={`h-2 w-4 sm:w-6 transition-all duration-300 rounded-sm border border-slate-400 ${i < (MAX_MISTAKES - wrongGuesses) ? 'bg-blue-900' : 'bg-transparent opacity-30'
+                      }`}
                   />
                 ))}
               </div>
@@ -401,11 +397,10 @@ export default function App() {
             <HangmanFigure wrongGuesses={wrongGuesses} shake={shake} />
 
             {/* Message */}
-            <div className="mt-6 sm:mt-8 text-center min-h-[2.5rem]">
-              <p className={`text-sm tracking-wide transition-all duration-300 ${
-                gameStatus === 'won' ? 'text-white font-normal' :
-                gameStatus === 'lost' ? 'text-zinc-500' : 'text-zinc-500'
-              }`}>
+            <div className="mt-6 sm:mt-8 text-center min-h-[3rem]">
+              <p className={`text-xl sm:text-2xl tracking-wide transition-all duration-300 font-bold transform -rotate-1 ${gameStatus === 'won' ? 'text-green-700' :
+                  gameStatus === 'lost' ? 'text-red-700' : 'text-slate-600'
+                }`}>
                 {message}
               </p>
             </div>
@@ -414,10 +409,10 @@ export default function App() {
             {gameStatus !== 'playing' && (
               <button
                 onClick={() => startNewGame()}
-                className="mt-6 w-full py-3 px-6 bg-white text-black font-normal tracking-widest text-sm flex items-center justify-center gap-2 hover:bg-zinc-200 transition-colors active:scale-95"
+                className="mt-6 w-full py-3 px-6 bg-blue-900 text-white font-bold tracking-widest text-lg flex items-center justify-center gap-2 hover:bg-blue-800 transition-colors active:scale-95 scribble-border shadow-md"
                 aria-label="Play again"
               >
-                <RotateCcw size={16} />
+                <RotateCcw size={20} />
                 PLAY AGAIN
               </button>
             )}
@@ -440,14 +435,14 @@ export default function App() {
                 <div
                   key={i}
                   className={`
-                    flex items-end justify-center w-7 h-10 sm:w-10 sm:h-14 md:w-12 md:h-16
-                    border-b-2 font-light text-xl sm:text-2xl md:text-3xl transition-all duration-300
-                    ${!showChar ? 'border-zinc-700' :
-                      isMissed ? 'border-zinc-600 text-zinc-500' :
-                      'border-white text-white'}
+                    flex items-end justify-center w-8 h-12 sm:w-12 sm:h-16 md:w-14 md:h-20
+                    border-b-4 font-bold text-3xl sm:text-4xl md:text-5xl transition-all duration-300
+                    ${!showChar ? 'border-slate-400' :
+                      isMissed ? 'border-red-400 text-red-600' :
+                        'border-blue-900 text-blue-900'}
                   `}
                 >
-                  <span className={showChar ? 'opacity-100' : 'opacity-0'}>
+                  <span className={`${showChar ? 'opacity-100' : 'opacity-0'} transform ${Math.random() > 0.5 ? 'rotate-1' : '-rotate-1'}`}>
                     {char}
                   </span>
                 </div>
@@ -462,16 +457,16 @@ export default function App() {
               {!hintRevealed && gameStatus === 'playing' ? (
                 <button
                   onClick={revealHint}
-                  className="flex items-center gap-2 text-[10px] sm:text-xs tracking-widest text-zinc-500 hover:text-white transition-colors py-2"
+                  className="flex items-center gap-2 text-xs sm:text-sm tracking-widest text-slate-500 hover:text-blue-900 transition-colors py-2 font-bold"
                   aria-label="Reveal hint"
                 >
-                  <Lightbulb size={14} className="shrink-0" />
+                  <Lightbulb size={16} className="shrink-0" />
                   <span>HINT?</span>
                 </button>
               ) : hintRevealed ? (
-                <div className="text-[11px] sm:text-xs text-zinc-400 italic py-2 pr-2">
+                <div className="text-sm sm:text-base text-slate-600 italic py-2 pr-2 font-hand font-bold">
                   <span className="flex items-start gap-2">
-                    <Lightbulb size={12} className="mt-0.5 shrink-0 text-zinc-600" />
+                    <Lightbulb size={16} className="mt-1 shrink-0 text-yellow-600" />
                     <span className="line-clamp-2">{currentWordObj.hint}</span>
                   </span>
                 </div>
@@ -481,10 +476,10 @@ export default function App() {
             {/* Layout Toggle */}
             <button
               onClick={toggleLayout}
-              className="shrink-0 flex items-center gap-1.5 text-[10px] tracking-widest text-zinc-600 hover:text-zinc-400 transition-colors uppercase border border-zinc-800 px-2 sm:px-3 py-1.5 sm:py-2"
+              className="shrink-0 flex items-center gap-1.5 text-xs tracking-widest text-slate-600 hover:text-blue-900 transition-colors uppercase border-2 border-slate-800 px-2 sm:px-3 py-1.5 sm:py-2 font-bold scribble-border bg-white"
               aria-label={`Switch to ${keyboardLayout === 'QWERTY' ? 'ABCD' : 'QWERTY'} layout`}
             >
-              <Keyboard size={12} />
+              <Keyboard size={14} />
               <span className="hidden sm:inline">{keyboardLayout}</span>
             </button>
           </div>
@@ -492,15 +487,15 @@ export default function App() {
           {/* Keyboard */}
           <div className="p-1" role="group" aria-label="Letter keyboard">
             {currentLayout.map((row, rowIndex) => (
-              <div key={rowIndex} className="flex justify-center gap-1 sm:gap-1.5 mb-1 sm:mb-1.5">
+              <div key={rowIndex} className="flex justify-center gap-1 sm:gap-2 mb-1 sm:mb-2">
                 {row.map((char) => {
                   const keyState = getKeyState(char);
 
-                  let btnStyle = "bg-transparent text-zinc-400 border-zinc-800 hover:border-zinc-600 hover:bg-zinc-900/50";
+                  let btnStyle = "bg-white text-slate-600 border-slate-300 hover:border-blue-500 hover:text-blue-900";
                   if (keyState === 'correct') {
-                    btnStyle = "bg-white text-black border-white";
+                    btnStyle = "bg-blue-100 text-blue-900 border-blue-900 font-bold transform -rotate-2";
                   } else if (keyState === 'wrong') {
-                    btnStyle = "bg-zinc-900/80 text-zinc-700 border-zinc-800";
+                    btnStyle = "bg-slate-100 text-slate-300 border-slate-200 decoration-slate-400 line-through";
                   }
 
                   return (
@@ -509,10 +504,10 @@ export default function App() {
                       disabled={keyState !== 'unused' || gameStatus !== 'playing'}
                       onClick={() => handleGuess(char)}
                       className={`
-                        h-11 sm:h-12 md:h-14 min-w-[2.2rem] sm:min-w-[2.5rem] md:min-w-[3rem]
-                        rounded border text-sm sm:text-base font-light
+                        h-12 sm:h-14 md:h-16 min-w-[2.5rem] sm:min-w-[3rem] md:min-w-[3.5rem]
+                        rounded-sm border-2 text-xl sm:text-2xl font-hand
                         transition-all duration-150 active:scale-95
-                        disabled:cursor-not-allowed
+                        disabled:cursor-not-allowed scribble-border
                         ${btnStyle}
                       `}
                       aria-label={`Letter ${char}`}
@@ -536,44 +531,44 @@ export default function App() {
       {/* Category Modal */}
       {showCategoryModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-sm animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in"
           onClick={(e) => e.target === e.currentTarget && setShowCategoryModal(false)}
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-title"
         >
-          <div className="bg-black border border-zinc-800 w-full max-w-lg max-h-[85vh] overflow-y-auto p-6 sm:p-8 relative">
+          <div className="bg-[#fdfbf7] border-2 border-blue-900 w-full max-w-lg max-h-[85vh] overflow-y-auto p-6 sm:p-8 relative scribble-border shadow-xl">
             <button
               onClick={() => setShowCategoryModal(false)}
-              className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors p-2"
+              className="absolute top-2 right-2 text-slate-400 hover:text-red-600 transition-colors p-4"
               aria-label="Close modal"
             >
-              <X size={20} />
+              <X size={24} />
             </button>
 
-            <h2 id="modal-title" className="text-xl sm:text-2xl font-thin text-white tracking-[0.15em] mb-2 uppercase">
+            <h2 id="modal-title" className="text-3xl sm:text-4xl font-bold text-blue-900 tracking-wide mb-2 uppercase transform -rotate-1">
               Select Theme
             </h2>
-            <p className="text-[10px] sm:text-xs text-zinc-500 tracking-widest mb-6 sm:mb-8 uppercase">
+            <p className="text-sm sm:text-base text-slate-500 tracking-widest mb-6 sm:mb-8 uppercase font-bold">
               Choose your arena
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {Object.keys(GAME_DATA).map(cat => (
                 <button
                   key={cat}
                   onClick={() => handleCategoryChange(cat)}
                   className={`
-                    w-full p-4 sm:p-5 border text-left transition-all duration-200 group active:scale-98
+                    w-full p-4 sm:p-5 border-2 text-left transition-all duration-200 group active:scale-98 scribble-border
                     ${category === cat
-                      ? 'bg-white text-black border-white'
-                      : 'bg-zinc-900/50 text-zinc-400 border-zinc-800 hover:border-zinc-600 hover:text-zinc-200'}
+                      ? 'bg-blue-100 text-blue-900 border-blue-900 transform -rotate-1'
+                      : 'bg-white text-slate-500 border-slate-300 hover:border-blue-400 hover:text-blue-800'}
                   `}
                 >
-                  <span className="text-xs sm:text-sm font-light tracking-[0.15em] uppercase">
+                  <span className="text-lg sm:text-xl font-bold tracking-wide uppercase">
                     {cat}
                   </span>
-                  <span className="block text-[10px] mt-1 opacity-60">
+                  <span className="block text-xs mt-1 opacity-70 font-sans font-bold">
                     {GAME_DATA[cat].length} words
                   </span>
                 </button>
