@@ -96,7 +96,16 @@ const GAME_DATA = {
 const MESSAGES = {
   win: ["Shabash!", "Ek number!", "Kya baat hai!", "Nailed it!", "Badhai ho!", "Full power!"],
   lose: ["Arre yaar!", "Ab kya hoga?", "Game over!", "So close!", "Try again!"],
-  start: ["Chalo shuru!", "Let's play!", "Guess karo!", "Dimag lagao!"]
+  start: [
+    "Picture abhi baaki hai!",
+    "Khel shuru kiya jaye!",
+    "Ready? Action!",
+    "Bade bade deshon mein...",
+    "Basanti, guess karo!",
+    "Mogambo khush hua!",
+    "Chalo shuru!",
+    "Dimag lagao!"
+  ]
 };
 
 // Keyboard Layouts
@@ -182,6 +191,13 @@ const Confetti = ({ active }) => {
     </div>
   );
 };
+
+const HandDrawnHeart = ({ className, filled }) => (
+  <svg viewBox="0 0 100 100" className={className} fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M 50,90 C 20,70 0,50 0,30 C 0,10 20,-10 50,20 C 80,-10 100,10 100,30 C 100,50 80,70 50,90 Z" />
+    <path d="M 50,90 C 25,70 5,50 5,30 C 5,15 20,5 45,25" fill="none" strokeWidth="2" className="opacity-60" />
+  </svg>
+);
 
 export default function App() {
   // Game State
@@ -369,7 +385,7 @@ export default function App() {
             className="p-2 sm:px-4 sm:py-2 border-2 border-slate-800 text-slate-700 hover:text-blue-900 hover:border-blue-900 transition-colors text-sm font-bold tracking-widest scribble-border bg-white/50"
             aria-label="Change theme"
           >
-            <span className="hidden sm:inline">THEME</span>
+            <span className="hidden sm:inline">CATEGORY</span>
             <Settings size={18} className="sm:hidden" />
           </button>
         </div>
@@ -385,12 +401,13 @@ export default function App() {
             <div className="flex justify-between items-center mb-6 sm:mb-8 w-full">
               <span className="text-sm font-bold text-slate-500 tracking-widest">LIVES</span>
               <div className="flex gap-1">
-                {[...Array(MAX_MISTAKES)].map((_, i) => (
-                  <div
-                    key={i}
-                    className={`h-2 w-4 sm:w-6 transition-all duration-300 rounded-sm border border-slate-400 ${i < (MAX_MISTAKES - wrongGuesses) ? 'bg-blue-900' : 'bg-transparent opacity-30'
-                      }`}
-                  />
+                {[...Array(MAX_MISTAKES - wrongGuesses)].map((_, i) => (
+                  <HandDrawnHeart key={i} filled className="w-6 h-6 sm:w-8 sm:h-8 text-red-600 animate-in" />
+                ))}
+                {[...Array(wrongGuesses)].map((_, i) => (
+                  <div key={`lost-${i}`} className="w-6 h-6 sm:w-8 sm:h-8 opacity-50">
+                    <HandDrawnHeart className="w-full h-full text-red-950" />
+                  </div>
                 ))}
               </div>
             </div>
@@ -549,7 +566,7 @@ export default function App() {
             </button>
 
             <h2 id="modal-title" className="text-3xl sm:text-4xl font-bold text-blue-900 tracking-wide mb-2 uppercase transform -rotate-1">
-              Select Theme
+              Select Category
             </h2>
             <p className="text-sm sm:text-base text-slate-500 tracking-widest mb-6 sm:mb-8 uppercase font-bold">
               Choose your arena
